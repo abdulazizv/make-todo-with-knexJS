@@ -49,22 +49,53 @@ export class UsersService {
         HttpStatus.BAD_REQUEST
       )
     };
+    user.is_registered = true;
     return "OK";
   }
   async findAll() {
-    return `This action returns all users`;
+    const users = await this.knex('users').select('*');
+    if(users.length < 1) {
+      throw new HttpException(
+        "Users is not found",
+        HttpStatus.NO_CONTENT
+      )
+    };
+    return users;
   }
 
-  async findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const [user] = await this.knex('users').where({user_id:id});
+    if(!user) {
+      throw new HttpException(
+        "User not found with this id",
+        HttpStatus.NOT_FOUND
+        )
+    };
+    return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+      const [user] = await this.knex('users').where({user_id:id});
+      if(!user) {
+        throw new HttpException(
+          "User not found!",
+          HttpStatus.NOT_FOUND
+          )
+      };
+      const updatedVersion = await this.knex('users').where({user_id:id}).update(updateUserDto).returning('*');
+      return updatedVersion;
   }
 
-  async remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    const check = await this.findOne(id);
+    if(!check) {
+      throw new HttpException(
+        "ID is not correct, user not found with id",
+        HttpStatus.NOT_FOUND
+      )
+    };
+    await this.knex('users').where({user_id:id}).delete();
+    return "Successfully deleted"
   }
 
   async generateOtp() {
