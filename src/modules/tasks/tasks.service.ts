@@ -1,26 +1,45 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { Knex } from 'knex';
 
 @Injectable()
 export class TasksService {
-  create(createTaskDto: CreateTaskDto) {
-    return 'This action adds a new task';
+  constructor(@Inject('Knexconnection') private knex: Knex) {}
+
+  async create(createTaskDto: CreateTaskDto) {
+    return await this.knex('tasks').insert(createTaskDto).returning('*');
   }
 
-  findAll() {
-    return `This action returns all tasks`;
+  async findAll() {
+    const allTasks = await this.knex('tasks').select('*');
+    return allTasks;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} task`;
+  async findOne(id: string) {
+    const oneTask = await this.knex('tasks').where({task_id:id}).returning('*');
+    if(!oneTask) {
+      throw new HttpException(
+        "ID is not found",
+        HttpStatus.NOT_FOUND
+      )
+    }
+    return oneTask;
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    return `This action updates a #${id} task`;
+  async update(id: number, updateTaskDto: UpdateTaskDto) {
+    const updatedTask = await this.knex('tasks').where({task_id:id}).update(updateTaskDto).returning('*');
+    return updatedTask;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} task`;
+  async remove(id: number) {
+    const check = await this.knex('tasks').where({task_id: id}).returning('*');
+    if(!check) {
+      throw new HttpException(
+        "NOT found, ID is not found",
+        HttpStatus.NOT_FOUND
+      )
+    };
+    return check;
   }
 }
