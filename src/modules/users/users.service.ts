@@ -5,6 +5,7 @@ import { Knex } from 'knex';
 import { CACHE_MANAGER } from '@nestjs/cache-manager'; 
 import { Cache } from 'cache-manager';
 import { AuthService } from '../../shared/utils/auth/auth.service';
+import * as speakeasy from 'speakeasy';
 
 @Injectable()
 export class UsersService {
@@ -14,23 +15,28 @@ export class UsersService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async register(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }
 
-  findAll() {
+  async findAll() {
     return `This action returns all users`;
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async generateOtp() {
+    const secret = speakeasy.generateSecret({length: 4});
+    return secret;
   }
 }
