@@ -1,10 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Knex } from 'knex';
+import { CACHE_MANAGER } from '@nestjs/cache-manager'; 
+import { Cache } from 'cache-manager';
+import { AuthService } from '../../shared/utils/auth/auth.service';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
+  constructor(
+    @Inject('KnexConnection') private knex: Knex,
+    readonly authService: AuthService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {}
+
+  async create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }
 
